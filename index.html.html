@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎂 1st Birthday Party 生日派對問答遊戲</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans TC & Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- QRCode.js for generating instant scannable QR codes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Canvas Confetti for celebration effects -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #fff5f7 0%, #fffbeb 50%, #fdf2f8 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .font-display {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+    }
+    /* Custom cute scalloped/glow border for baby photo */
+    .baby-frame {
+      box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.35), 0 0 0 6px #ffffff, 0 0 0 10px #fbcfe8;
+    }
+    .card-soft {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border: 2px solid #fce7f3;
+      box-shadow: 0 12px 30px -8px rgba(236, 72, 153, 0.12);
+    }
+    .option-btn {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .option-btn:active {
+      transform: scale(0.97);
+    }
+    .option-selected {
+      background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+      color: white;
+      border-color: #db2777;
+      box-shadow: 0 6px 15px -3px rgba(236, 72, 153, 0.4);
+      transform: translateY(-2px);
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(3deg); }
+    }
+    .animate-float {
+      animation: floatSlow 4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="text-slate-700 pb-16">
+
+  <!-- Top Navigation Bar -->
+  <nav class="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-pink-100 px-4 py-2.5 shadow-sm">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🎂</span>
+        <span class="font-bold text-pink-600 text-sm sm:text-base tracking-tight">1st Birthday Quiz</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnShowQrModal" type="button" class="flex items-center gap-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs sm:text-sm font-bold px-3 py-2 rounded-full transition">
+          <span>📱</span> 分享 QR Code
+        </button>
+        <button id="btnToggleMode" type="button" class="flex items-center gap-1.5 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs sm:text-sm font-bold px-3 py-2 rounded-full transition">
+          <span id="modeIcon">👑</span> <span id="modeText">主人家後台</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Toast / Message Banner (No alert() used) -->
+  <div id="toastContainer" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- Main Container -->
+  <main class="max-w-xl mx-auto px-4 pt-6">
+
+    <!-- Header & Baby Photo Showcase -->
+    <header class="text-center mb-6 relative">
+      <div class="inline-block relative mb-4">
+        <!-- Decorative floating icons -->
+        <span class="absolute -left-8 top-2 text-2xl animate-float">🎈</span>
+        <span class="absolute -right-8 top-4 text-2xl animate-float" style="animation-delay: 1.2s;">✨</span>
+        <span class="absolute -left-6 bottom-1 text-xl animate-float" style="animation-delay: 0.6s;">🎀</span>
+        <span class="absolute -right-6 bottom-1 text-xl animate-float" style="animation-delay: 1.8s;">🎁</span>
+
+        <!-- Circular Photo Frame -->
+        <div id="photoWrapper" class="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden bg-gradient-to-b from-pink-100 to-amber-50 baby-frame mx-auto flex items-center justify-center relative group">
+          <img id="babyPhotoImg" src="" alt="壽星女靚相" class="w-full h-full object-cover hidden" />
+          <!-- Cute SVG Baby Avatar Fallback -->
+          <div id="babyAvatarFallback" class="flex flex-col items-center justify-center text-center p-2">
+            <svg class="w-20 h-20" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="60" cy="66" r="36" fill="#FFE4D6"/>
+              <!-- Party Hat -->
+              <polygon points="60,8 42,36 78,36" fill="#F472B6"/>
+              <circle cx="60" cy="8" r="5" fill="#FBBF24"/>
+              <path d="M45 31 Q60 36 75 31" stroke="#FDE68A" stroke-width="3" stroke-linecap="round"/>
+              <!-- Hair curl -->
+              <path d="M56 36 C52 28, 66 26, 62 36" stroke="#4B3621" stroke-width="3" stroke-linecap="round" fill="none"/>
+              <!-- Eyes -->
+              <circle cx="47" cy="63" r="4" fill="#1E293B"/>
+              <circle cx="48.5" cy="61.5" r="1.3" fill="#FFFFFF"/>
+              <circle cx="73" cy="63" r="4" fill="#1E293B"/>
+              <circle cx="74.5" cy="61.5" r="1.3" fill="#FFFFFF"/>
+              <!-- Blush -->
+              <ellipse cx="39" cy="72" rx="6" ry="3.5" fill="#FDA4AF" opacity="0.7"/>
+              <ellipse cx="81" cy="72" rx="6" ry="3.5" fill="#FDA4AF" opacity="0.7"/>
+              <!-- Happy Smile -->
+              <path d="M51 76 Q60 85 69 76" stroke="#E11D48" stroke-width="3" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+          <!-- Quick upload overlay button -->
+          <label for="quickPhotoInput" title="更換壽星女靚相" class="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center cursor-pointer text-xs font-bold">
+            <span class="text-lg mb-0.5">📷</span>
+            <span>換靚相</span>
+          </label>
+        </div>
+        <input type="file" id="quickPhotoInput" accept="image/*" class="hidden" />
+      </div>
+
+      <div class="inline-block bg-pink-100/80 text-pink-700 text-xs font-bold px-3.5 py-1 rounded-full mb-2 tracking-wide">
+        🥳 歡迎嚟到我嘅一歲生日派對
+      </div>
+      <h1 id="partyTitleDisplay" class="font-display text-2xl sm:text-3xl font-extrabold text-pink-600 leading-snug">
+        🎂 1st Birthday Party 生日派對問答遊戲
+      </h1>
+      <p class="text-sm text-slate-500 mt-1.5 leading-relaxed">
+        每條問題獨立送出 <span class="font-bold text-amber-600">1 份禮物</span>（合共 <span class="font-bold text-pink-600">3 份</span>）！<br/>
+        體重及身高<span class="font-bold text-pink-600">「最接近實際數字」</span>即贏；抓周多人估中（或無人中）即現場轉盤抽幸運兒！🍀
+      </p>
+    </header>
+
+    <!-- =========================================================
+         VIEW 1: GUEST QUIZ VIEW (賓客答題頁 - 開放式自由作答)
+    ========================================================== -->
+    <section id="guestView" class="space-y-5">
+
+      <!-- Guest Form Card -->
+      <form id="quizForm" class="card-soft rounded-3xl p-5 sm:p-7 space-y-6">
+        <!-- Guest Info -->
+        <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 space-y-3.5">
+          <div class="flex items-center gap-2 text-amber-800 font-bold text-sm">
+            <span>👋</span> <span>第一步：填寫你嘅資料（方便中獎叫名）</span>
+          </div>
+          <div>
+            <label for="guestName" class="block text-xs font-bold text-slate-600 mb-1">賓客姓名 / 稱呼 <span class="text-rose-500">*</span></label>
+            <input type="text" id="guestName" required maxlength="25" placeholder="例如：陳大文 / 表姐 Amy / 姨丈"
+              class="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-white focus:outline-none focus:border-pink-400 text-base font-medium" />
+          </div>
+          <div>
+            <label for="guestContact" class="block text-xs font-bold text-slate-600 mb-1">檯號 / 電話尾數（選填，防撞名）</label>
+            <input type="text" id="guestContact" maxlength="25" placeholder="例如：2號檯 / 9123"
+              class="w-full px-4 py-2.5 rounded-xl border-2 border-amber-200 bg-white focus:outline-none focus:border-pink-400 text-sm" />
+          </div>
+        </div>
+
+        <!-- Question 1: Open-Ended Weight with Unit Selector -->
+        <div class="space-y-2">
+        <!-- Question 1: Open-Ended Weight strictly in kg -->
+        <div class="space-y-2">
+          <label for="inputQ1Weight" class="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-pink-500 text-white text-sm flex items-center justify-center font-display">1</span>
+            <span id="q1TitleText">估下我宜家幾重？(kg) ⚖️</span>
+          </label>
+          <p class="text-xs text-slate-400 pl-9">自由輸入公斤數字（只限 kg，最接近實際體重嗰位當啱！）</p>
+          <div class="flex items-center gap-2 pl-0 sm:pl-9">
+            <input type="number" id="inputQ1Weight" step="0.01" min="1" max="50" required placeholder="例如：9.2"
+              class="flex-1 px-4 py-3.5 rounded-2xl border-2 border-pink-200 bg-white focus:outline-none focus:border-pink-500 text-lg font-extrabold text-slate-800" />
+            <span class="px-5 py-3.5 rounded-2xl border-2 border-pink-100 bg-pink-50 text-pink-700 font-extrabold text-base">
+              kg
+            </span>
+          </div>
+        </div>
+
+        <!-- Question 2: Open-Ended Height in cm -->
+        <div class="space-y-2">
+          <label for="inputQ2Height" class="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-pink-500 text-white text-sm flex items-center justify-center font-display">2</span>
+            <span id="q2TitleText">估下我宜家幾高？(cm) 📏</span>
+          </label>
+          <p class="text-xs text-slate-400 pl-9">自由輸入厘米數字（最接近實際身高嗰位當啱！）</p>
+          <div class="flex items-center gap-2 pl-0 sm:pl-9">
+            <input type="number" id="inputQ2Height" step="0.1" min="30" max="150" required placeholder="例如：74.5"
+              class="flex-1 px-4 py-3.5 rounded-2xl border-2 border-pink-200 bg-white focus:outline-none focus:border-pink-500 text-lg font-extrabold text-slate-800" />
+            <span class="px-5 py-3.5 rounded-2xl border-2 border-pink-100 bg-pink-50 text-pink-700 font-extrabold text-base">
+              cm
+            </span>
+          </div>
+        </div>
+
+        <!-- Question 3: Open-Ended Zhuazhou Item -->
+        <div class="space-y-2">
+          <label for="inputQ3Zhuazhou" class="font-bold text-base sm:text-lg text-slate-800 flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-pink-500 text-white text-sm flex items-center justify-center font-display">3</span>
+            <span id="q3TitleText">抓周我會拎啲咩？🎁</span>
+          </label>
+          <p class="text-xs text-slate-400 pl-9">自由填寫你估壽星女第一樣會抓起嘅物品（例如：聽診器、雞腿、計算機、毛筆、錢...）</p>
+          <div class="pl-0 sm:pl-9">
+            <input type="text" id="inputQ3Zhuazhou" maxlength="30" required placeholder="輸入你估嘅抓周物品..."
+              class="w-full px-4 py-3.5 rounded-2xl border-2 border-pink-200 bg-white focus:outline-none focus:border-pink-500 text-base font-bold text-slate-800" />
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-2">
+          <button type="submit" id="btnSubmitQuiz"
+            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-extrabold text-lg shadow-lg shadow-pink-300/50 transition transform active:scale-98 flex items-center justify-center gap-2">
+            <span>送出我嘅答案</span> <span>🚀</span>
+          </button>
+          <p class="text-center text-xs text-slate-400 mt-2.5">每位賓客限參加一次，送出後請留意現場公佈結果！</p>
+        </div>
+      </form>
+
+      <!-- Submitted Confirmation Screen (Hidden initially) -->
+      <div id="submittedCard" class="hidden card-soft rounded-3xl p-6 sm:p-8 text-center space-y-5">
+        <div class="w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl mx-auto shadow-inner">
+          🎉
+        </div>
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-800">成功遞交答案！</h2>
+          <p class="text-sm text-slate-500 mt-1">多謝 <span id="submittedGuestName" class="font-bold text-pink-600"></span> 嘅祝福同參與！</p>
+        </div>
+
+        <div class="bg-pink-50/80 border border-pink-200 rounded-2xl p-4 text-left space-y-2 text-sm">
+          <div class="font-bold text-pink-700 mb-1">📝 你嘅預測紀錄：</div>
+          <div class="flex justify-between border-b border-pink-100 pb-1.5">
+            <span class="text-slate-500">1. 幾重：</span>
+            <span id="recQ1" class="font-bold text-slate-800">-</span>
+          </div>
+          <div class="flex justify-between border-b border-pink-100 pb-1.5">
+            <span class="text-slate-500">2. 幾高：</span>
+            <span id="recQ2" class="font-bold text-slate-800">-</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">3. 抓周拎咩：</span>
+            <span id="recQ3" class="font-bold text-slate-800">-</span>
+          </div>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs sm:text-sm text-amber-800 font-medium">
+          ⏳ 3 條問題各有 1 份獨立禮物！請留意主人家現場揭曉每題得獎者同幸運抽獎！🍀
+        </div>
+
+        <button type="button" id="btnHelpAnotherGuest" class="text-xs text-slate-400 underline hover:text-pink-500 pt-2">
+          幫屋企人 / 小朋友用呢部手機再填一份
+        </button>
+      </div>
+
+      <!-- Live Participant Counter Pill -->
+      <div class="text-center">
+        <span class="inline-flex items-center gap-2 bg-white/80 border border-pink-100 px-4 py-1.5 rounded-full text-xs text-slate-500 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          目前已有 <strong id="liveGuestCount" class="text-pink-600 text-sm">0</strong> 位賓客參加咗
+        </span>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         VIEW 2: HOST ADMIN & LUCKY DRAW VIEW (主人家後台 & 現場抽獎)
+    ========================================================== -->
+    <section id="hostView" class="hidden space-y-5">
+
+      <!-- PIN Lock Screen -->
+      <div id="hostPinScreen" class="card-soft rounded-3xl p-6 sm:p-8 text-center space-y-4 max-w-sm mx-auto">
+        <div class="text-4xl">🔐</div>
+        <h2 class="text-xl font-extrabold text-slate-800">主人家專區</h2>
+        <p class="text-xs text-slate-500">請輸入密碼進入輸入實際答案、自動對分同現場抽獎<br/><span class="text-pink-500 font-bold">（預設密碼：1234）</span></p>
+        <input type="password" id="hostPinInput" inputmode="numeric" maxlength="8" placeholder="輸入密碼"
+          class="w-full text-center tracking-widest text-xl font-bold py-3 px-4 rounded-xl border-2 border-pink-200 focus:outline-none focus:border-pink-500" />
+        <div class="flex gap-2">
+          <button type="button" id="btnCancelPin" class="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm">
+            返回答題頁
+          </button>
+          <button type="button" id="btnUnlockHost" class="flex-1 py-3 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm shadow">
+            解鎖進入
+          </button>
+        </div>
+      </div>
+
+      <!-- Unlocked Host Dashboard -->
+      <div id="hostDashboard" class="hidden space-y-5">
+
+        <!-- Sub-navigation Tabs -->
+        <div class="grid grid-cols-2 gap-2 bg-white/80 p-1.5 rounded-2xl border border-pink-100 shadow-sm">
+          <button type="button" id="tabBtnDraw" class="py-2.5 px-3 rounded-xl font-bold text-sm bg-pink-500 text-white shadow transition">
+            🎁 三份禮物揭曉與抽獎 (<span id="hostCountBadge">0</span>)
+          </button>
+          <button type="button" id="tabBtnSetup" class="py-2.5 px-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-pink-50 transition">
+            ⚙️ QR Code、靚相與設定
+          </button>
+        </div>
+
+        <!-- TAB A: PER-QUESTION PRIZES & LUCKY DRAW (每題獨立禮物與幸運抽獎) -->
+        <div id="hostTabDraw" class="space-y-5">
+
+          <!-- PRIZE 1: WEIGHT (kg) -->
+          <div class="card-soft rounded-3xl p-5 space-y-3.5 border-pink-200">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-full bg-pink-500 text-white text-xs font-extrabold">🎁 禮物一</span>
+                <h3 class="font-extrabold text-base sm:text-lg text-slate-800">最接近體重獎 (kg) ⚖️</h3>
+              </div>
+              <button type="button" id="btnResetPrize1" class="hidden text-xs text-rose-500 hover:underline font-bold">重設禮物一</button>
+            </div>
+
+            <div class="bg-pink-50/70 p-3.5 rounded-2xl border border-pink-100 flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <label for="actualWeightInput" class="text-xs font-extrabold text-pink-700 shrink-0">輸入實際體重：</label>
+              <div class="flex items-center gap-2 flex-1">
+                <input type="number" id="actualWeightInput" step="0.01" placeholder="例如：9.2"
+                  class="w-full px-3.5 py-2 rounded-xl border-2 border-pink-200 bg-white text-base font-extrabold text-slate-800 focus:border-pink-500 focus:outline-none" />
+                <span class="px-3.5 py-2 rounded-xl bg-white border-2 border-pink-100 text-xs font-extrabold text-pink-700">kg</span>
+              </div>
+            </div>
+
+            <div id="prize1ResultBox" class="bg-white border border-pink-100 rounded-2xl p-3.5 text-sm space-y-2.5">
+              <p class="text-xs text-slate-400">輸入實際體重後，系統會自動計算全場誤差最細嘅賓客。</p>
+            </div>
+          </div>
+
+          <!-- PRIZE 2: HEIGHT (cm) -->
+          <div class="card-soft rounded-3xl p-5 space-y-3.5 border-pink-200">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-full bg-amber-500 text-white text-xs font-extrabold">🎁 禮物二</span>
+                <h3 class="font-extrabold text-base sm:text-lg text-slate-800">最接近身高獎 (cm) 📏</h3>
+              </div>
+              <button type="button" id="btnResetPrize2" class="hidden text-xs text-rose-500 hover:underline font-bold">重設禮物二</button>
+            </div>
+
+            <div class="bg-amber-50/70 p-3.5 rounded-2xl border border-amber-100 flex flex-col sm:flex-row sm:items-center gap-2.5">
+              <label for="actualHeightInput" class="text-xs font-extrabold text-amber-800 shrink-0">輸入實際身高：</label>
+              <div class="flex items-center gap-2 flex-1">
+                <input type="number" id="actualHeightInput" step="0.1" placeholder="例如：74.5"
+                  class="w-full px-3.5 py-2 rounded-xl border-2 border-amber-200 bg-white text-base font-extrabold text-slate-800 focus:border-pink-500 focus:outline-none" />
+                <span class="px-3.5 py-2 rounded-xl bg-white border-2 border-amber-100 text-xs font-extrabold text-amber-800">cm</span>
+              </div>
+            </div>
+
+            <div id="prize2ResultBox" class="bg-white border border-amber-100 rounded-2xl p-3.5 text-sm space-y-2.5">
+              <p class="text-xs text-slate-400">輸入實際身高後，系統會自動計算全場誤差最細嘅賓客。</p>
+            </div>
+          </div>
+
+          <!-- PRIZE 3: ZHUAZHOU (抓周神算獎 + 多人答中大抽獎) -->
+          <div class="card-soft rounded-3xl p-5 space-y-3.5 border-emerald-200">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-500 text-white text-xs font-extrabold">🎁 禮物三</span>
+                <h3 class="font-extrabold text-base sm:text-lg text-slate-800">抓周神算獎 🎁</h3>
+              </div>
+              <button type="button" id="btnResetPrize3" class="hidden text-xs text-rose-500 hover:underline font-bold">重設禮物三</button>
+            </div>
+
+            <div class="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-100 space-y-2">
+              <label for="actualZhuazhouInput" class="block text-xs font-extrabold text-emerald-800">實際抓周拎咗咩？（備註，並喺下面勾選答中嘅賓客）</label>
+              <input type="text" id="actualZhuazhouInput" placeholder="例如：聽診器 / 錢 / 雞腿（可留空）"
+                class="w-full px-3.5 py-2 rounded-xl border-2 border-emerald-200 bg-white text-sm font-bold text-slate-800 focus:border-pink-500 focus:outline-none" />
+            </div>
+
+            <!-- Quick Zhuazhou Checklist for All Guests -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs font-bold text-slate-600">
+                <span>勾選所有答中抓周物品嘅賓客（同義詞亦可勾選）：</span>
+                <span id="q3MatchedCountBadge" class="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">0 人答中</span>
+              </div>
+              <div id="q3ChecklistContainer" class="max-h-56 overflow-y-auto space-y-1.5 pr-1 bg-slate-50/70 p-2.5 rounded-2xl border border-slate-100">
+                <p class="text-xs text-slate-400 text-center py-3">暫時未有賓客提交答案</p>
+              </div>
+            </div>
+
+            <div id="prize3ResultBox" class="bg-white border border-emerald-100 rounded-2xl p-3.5 text-sm space-y-2.5">
+              <p class="text-xs text-slate-400">勾選答中賓客後：1 人答中直接贏；2 人或以上答中即開抽獎輪抽出 1 位幸運兒！</p>
+            </div>
+          </div>
+
+          <!-- Full Guest List & All Answers Table -->
+          <div class="card-soft rounded-3xl p-5 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-extrabold text-base text-slate-800">📋 全部賓客預測總覽</h3>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="btnAddDemoGuests" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-2.5 py-1 rounded-lg">
+                  + 加入測試賓客
+                </button>
+                <button type="button" id="btnClearAllGuests" class="text-xs text-rose-500 hover:bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                  清空資料
+                </button>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-400">
+              💡 列出每位賓客對三條問題嘅預測同誤差值，方便現場一邊揭曉一邊炒熱氣氛！
+            </p>
+
+            <div id="guestListContainer" class="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+              <p class="text-center text-sm text-slate-400 py-6">暫時未有賓客提交答案</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB B: SETUP & QR CODE (設定題目、相片與 QR Code) -->
+        <div id="hostTabSetup" class="hidden space-y-5">
+
+          <!-- QR Code Card -->
+          <div class="card-soft rounded-3xl p-5 text-center space-y-3">
+            <h3 class="font-extrabold text-base text-slate-800">📱 賓客掃描 QR Code 玩遊戲</h3>
+            <p class="text-xs text-slate-500">可以按「全螢幕放大 QR Code」放喺 iPad / 電視螢幕畀 20-30 位賓客一齊掃！</p>
+            <div id="hostQrContainer" class="bg-white p-4 rounded-2xl border-2 border-pink-100 inline-block mx-auto shadow-sm"></div>
+            <div class="flex flex-wrap justify-center gap-2 pt-1">
+              <button type="button" id="btnFullscreenQr" class="px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow">
+                🖥️ 全螢幕放大 QR Code
+              </button>
+              <button type="button" id="btnCopyLink" class="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold text-xs">
+                🔗 複製遊戲網址
+              </button>
+              <button type="button" id="btnDownloadQr" class="px-4 py-2.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs">
+                ⬇️ 下載圖片
+              </button>
+            </div>
+          </div>
+
+          <!-- Photo & Title Customization -->
+          <div class="card-soft rounded-3xl p-5 space-y-4">
+            <h3 class="font-extrabold text-base text-slate-800">🎀 壽星女靚相與標題</h3>
+            <div class="flex items-center gap-3">
+              <label for="setupPhotoInput" class="cursor-pointer px-4 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow">
+                📷 上傳 / 更換個女張相
+              </label>
+              <input type="file" id="setupPhotoInput" accept="image/*" class="hidden" />
+              <span class="text-xs text-slate-400">自動壓縮並同步畀所有賓客睇</span>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">派對標題</label>
+              <input type="text" id="setupPartyTitle" class="w-full px-3.5 py-2.5 rounded-xl border-2 border-pink-100 text-sm font-bold" />
+            </div>
+          </div>
+
+          <!-- Edit Question Titles -->
+          <div class="card-soft rounded-3xl p-5 space-y-4">
+            <h3 class="font-extrabold text-base text-slate-800">✏️ 自訂三條問題字眼</h3>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">問題 1 題目（體重）</label>
+              <input type="text" id="setupQ1Title" class="w-full px-3 py-2 rounded-xl border border-pink-200 text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">問題 2 題目（身高）</label>
+              <input type="text" id="setupQ2Title" class="w-full px-3 py-2 rounded-xl border border-pink-200 text-sm" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">問題 3 題目（抓周）</label>
+              <input type="text" id="setupQ3Title" class="w-full px-3 py-2 rounded-xl border border-pink-200 text-sm" />
+            </div>
+
+            <button type="button" id="btnSaveSetup" class="w-full py-3.5 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-sm shadow-md">
+              💾 儲存設定並同步畀所有賓客
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Share / Fullscreen QR Code Modal -->
+  <div id="qrModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl border-4 border-pink-200 relative">
+      <button type="button" id="btnCloseQrModal" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+      <div class="text-3xl">🎂📱</div>
+      <h3 class="font-extrabold text-xl text-pink-600">掃一掃 QR Code 玩遊戲！</h3>
+      <p class="text-xs sm:text-sm text-slate-500">3 條問題各有 1 份禮物（共 3 份）！最接近實際數字或抓周估中即有機會贏大獎！</p>
+      <div id="modalQrContainer" class="bg-white p-4 rounded-2xl border-2 border-pink-100 inline-block mx-auto shadow-inner"></div>
+      <button type="button" id="btnModalCopyUrl" class="w-full py-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-extrabold text-xs sm:text-sm">
+        🔗 複製連結傳送去 WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Dedicated Per-Question Lucky Draw Wheel Modal -->
+  <div id="wheelModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full text-center space-y-4 shadow-2xl border-4 border-amber-300 relative">
+      <button type="button" id="btnCloseWheelModal" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold">✕</button>
+      <div id="wheelModalBadge" class="inline-block bg-pink-100 text-pink-700 text-xs font-extrabold px-3 py-1 rounded-full">
+        🎁 幸運大抽獎
+      </div>
+      <h3 id="wheelModalTitle" class="font-extrabold text-xl text-slate-800">抽出幸運兒！</h3>
+      <p id="wheelModalDesc" class="text-xs text-slate-500">候選名單已自動載入轉盤</p>
+
+      <!-- Canvas Wheel -->
+      <div class="relative w-64 h-64 sm:w-72 sm:h-72 mx-auto my-2">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-3xl drop-shadow">🔻</div>
+        <canvas id="wheelCanvas" class="w-full h-full rounded-full shadow-lg border-4 border-amber-300"></canvas>
+      </div>
+
+      <button type="button" id="btnSpinWheel"
+        class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 disabled:opacity-40">
+        🎰 轉動幸運輪抽出得獎者！
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Modal (Replaces confirm()) -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-2xl">
+      <div class="text-3xl">⚠️</div>
+      <h3 id="confirmTitle" class="font-extrabold text-base text-slate-800">確定要執行？</h3>
+      <p id="confirmDesc" class="text-xs text-slate-500">此動作無法復原。</p>
+      <div class="flex gap-2 pt-1">
+        <button type="button" id="btnConfirmNo" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold text-xs">取消</button>
+        <button type="button" id="btnConfirmYes" class="flex-1 py-2.5 rounded-xl bg-rose-500 text-white font-bold text-xs">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase & Application Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, updateDoc, onSnapshot, collection, addDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // ==========================================
+    // 1. DEFAULT CONFIG & STATE (Strictly kg)
+    // ==========================================
+    const DEFAULT_CONFIG = {
+      partyTitle: "🎂 1st Birthday Party 生日派對問答遊戲",
+      photoBase64: "",
+      q1Title: "估下我宜家幾重？(kg) ⚖️",
+      q2Title: "估下我宜家幾高？(cm) 📏",
+      q3Title: "抓周我會拎啲咩？🎁",
+      actualWeightVal: "",
+      actualHeightCm: "",
+      actualZhuazhouNote: "",
+      confirmedWinners: [] // Array of objects: { id, name, contact, score, method }
+    };
+
+    let appState = {
+      config: { ...DEFAULT_CONFIG },
+      guests: [],
+      isHostUnlocked: false,
+      currentView: "guest", // 'guest' | 'host'
+      wheelAngle: 0,
+      isSpinning: false,
+      user: null
+    };
+
+    // ==========================================
+    // 4. CLOSEST-WINS SCORING & LUCKY DRAW LOGIC (Strictly kg & cm)
+    // ==========================================
+    /**
+     * Evaluates all guests with "Closest Wins" logic:
+     * - Weight: finds minimum |guessKg - actualKg| in kg (within 0.005kg tolerance for ties).
+     * - Height: finds minimum |guessCm - actualCm| in cm (within 0.05cm tolerance for ties).
+     * - Zhuazhou: checks guest.q3Matched boolean toggled by host (or exact string match with actualZhuazhouNote).
+     */
+    function getEvaluatedGuests() {
+      const cfg = appState.config;
+      const actualKg = parseFloat(cfg.actualWeightVal);
+      const hasActualWeight = !isNaN(actualKg) && actualKg > 0;
+      const actualCm = parseFloat(cfg.actualHeightCm);
+      const hasActualHeight = !isNaN(actualCm) && actualCm > 0;
+      const noteClean = (cfg.actualZhuazhouNote || "").trim().toLowerCase();
+
+      // Step 1: Compute raw diffs for each guest
+      const enriched = appState.guests.map((g) => {
+        const gKg = parseFloat(g.q1Val);
+        const weightDiffKg = (hasActualWeight && !isNaN(gKg) && gKg > 0) ? Math.abs(gKg - actualKg) : null;
+
+        const gCm = parseFloat(g.q2Val);
+        const heightDiffCm = (hasActualHeight && !isNaN(gCm) && gCm > 0) ? Math.abs(gCm - actualCm) : null;
+
+        // Zhuazhou: either host manually ticked q3Matched, or exact text match if q3Matched wasn't explicitly set to false
+        const autoTextMatch = noteClean.length > 0 && (g.q3Text || "").trim().toLowerCase() === noteClean;
+        const q3Won = typeof g.q3Matched === "boolean" ? g.q3Matched : autoTextMatch;
+
+        return {
+          ...g,
+          gKg,
+          weightDiffKg,
+          heightDiffCm,
+          q3Won,
+          q1Won: false,
+          q2Won: false,
+          score: 0
+        };
+      });
+
+      // Step 2: Find minimum weight difference across all guests
+      const validWeightDiffs = enriched.map((g) => g.weightDiffKg).filter((d) => d !== null);
+      const minWeightDiff = validWeightDiffs.length > 0 ? Math.min(...validWeightDiffs) : null;
+
+      // Step 3: Find minimum height difference across all guests
+      const validHeightDiffs = enriched.map((g) => g.heightDiffCm).filter((d) => d !== null);
+      const minHeightDiff = validHeightDiffs.length > 0 ? Math.min(...validHeightDiffs) : null;
+
+      // Step 4: Assign points (1 pt each)
+      enriched.forEach((g) => {
+        if (minWeightDiff !== null && g.weightDiffKg !== null && Math.abs(g.weightDiffKg - minWeightDiff) < 0.005) {
+          g.q1Won = true;
+        }
+        if (minHeightDiff !== null && g.heightDiffCm !== null && Math.abs(g.heightDiffCm - minHeightDiff) < 0.05) {
+          g.q2Won = true;
+        }
+        g.score = (g.q1Won ? 1 : 0) + (g.q2Won ? 1 : 0) + (g.q3Won ? 1 : 0);
+      });
+
+      // Sort by score DESC, then combined normalized error ASC, then earliest submission ASC
+      enriched.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const errA = (a.weightDiffKg ?? 99) + ((a.heightDiffCm ?? 99) / 10);
+        const errB = (b.weightDiffKg ?? 99) + ((b.heightDiffCm ?? 99) / 10);
+        if (Math.abs(errA - errB) > 0.001) return errA - errB;
+        return (a.submittedAt || 0) - (b.submittedAt || 0);
+      });
+
+      return enriched;
+    }
+
+    function computePrizeState() {
+      const ranked = getEvaluatedGuests();
+      const totalGuests = ranked.length;
+      const cfg = appState.config;
+      const hasAnyAnswerSet = Boolean(
+        (cfg.actualWeightVal && parseFloat(cfg.actualWeightVal) > 0) ||
+        (cfg.actualHeightCm && parseFloat(cfg.actualHeightCm) > 0) ||
+        ranked.some((g) => g.q3Won)
+      );
+
+      const validConfirmed = (cfg.confirmedWinners || []).filter((w) =>
+        ranked.some((g) => g.id === w.id)
+      ).map((w) => {
+        const fresh = ranked.find((g) => g.id === w.id);
+        return { ...w, score: fresh ? fresh.score : w.score };
+      });
+
+      if (totalGuests === 0) {
+        return {
+          ranked,
+          confirmedWinners: [],
+          drawCandidates: [],
+          statusMessage: "暫時未有賓客提交答案。等賓客掃 QR Code 輸入預測後，系統會自動計算最接近嘅得獎者！"
+        };
+      }
+
+      if (!hasAnyAnswerSet) {
+        const pool = ranked.filter((g) => !validConfirmed.some((w) => w.id === g.id));
+        return {
+          ranked,
+          confirmedWinners: validConfirmed,
+          drawCandidates: pool,
+          statusMessage: "💡 請喺上面輸入實際體重／身高，或勾選抓周答中嘅賓客；亦可以直接用幸運輪從全部參加者中抽獎。"
+        };
+      }
+
+      const maxScore = ranked[0].score;
+
+      if (maxScore === 0) {
+        const pool = ranked.filter((g) => !validConfirmed.some((w) => w.id === g.id));
+        return {
+          ranked,
+          confirmedWinners: validConfirmed,
+          drawCandidates: pool,
+          statusMessage: `😅 暫時無人得分（全部 0 分）！將從全部 ${ranked.length} 位參加者中抽出 3 位幸運兒！`
+        };
+      }
+
+      const remainingSlots = 3 - validConfirmed.length;
+      if (remainingSlots <= 0) {
+        return {
+          ranked,
+          confirmedWinners: validConfirmed.slice(0, 3),
+          drawCandidates: [],
+          statusMessage: "🎉 3 位得獎者已經全部誕生！恭喜晒各位幸運兒！"
+        };
+      }
+
+      const unwonGuests = ranked.filter((g) => !validConfirmed.some((w) => w.id === g.id));
+      if (unwonGuests.length === 0) {
+        return {
+          ranked,
+          confirmedWinners: validConfirmed,
+          drawCandidates: [],
+          statusMessage: "所有參加者都已經獲獎！"
+        };
+      }
+
+      const nextTopScore = unwonGuests[0].score;
+      const candidatesInTier = nextTopScore === 0
+        ? unwonGuests
+        : unwonGuests.filter((g) => g.score === nextTopScore);
+
+      let msg = "";
+      if (candidatesInTier.length <= remainingSlots) {
+        msg = `🌟 目前最高分（${nextTopScore} 分）有 ${candidatesInTier.length} 人，可以直接入選得獎名單（仲有 ${remainingSlots} 個名額）！`;
+      } else {
+        msg = `🔥 有 ${candidatesInTier.length} 位賓客同分（${nextTopScore} 分），但只剩 ${remainingSlots} 份禮物！請轉動幸運輪抽出幸運兒！`;
+      }
+
+      return {
+        ranked,
+        confirmedWinners: validConfirmed,
+        drawCandidates: candidatesInTier,
+        autoQualifyCandidates: candidatesInTier.length <= remainingSlots ? candidatesInTier : [],
+        statusMessage: msg
+      };
+    }
+
+    // ==========================================
+    // 5. RENDERING FUNCTIONS
+    // ==========================================
+    function renderAll() {
+      renderHeaderAndPhoto();
+      renderGuestQuestionTitles();
+      renderHostControls();
+      renderLeaderboardAndDraw();
+    }
+
+    function renderHeaderAndPhoto() {
+      document.getElementById("partyTitleDisplay").textContent = appState.config.partyTitle || DEFAULT_CONFIG.partyTitle;
+      const imgEl = document.getElementById("babyPhotoImg");
+      const fallbackEl = document.getElementById("babyAvatarFallback");
+
+      if (appState.config.photoBase64) {
+        imgEl.src = appState.config.photoBase64;
+        imgEl.classList.remove("hidden");
+        fallbackEl.classList.add("hidden");
+      } else {
+        imgEl.classList.add("hidden");
+        fallbackEl.classList.remove("hidden");
+      }
+
+      document.getElementById("liveGuestCount").textContent = appState.guests.length;
+      document.getElementById("hostCountBadge").textContent = appState.guests.length;
+    }
+
+    function renderGuestQuestionTitles() {
+      const cfg = appState.config;
+      document.getElementById("q1TitleText").textContent = cfg.q1Title || DEFAULT_CONFIG.q1Title;
+      document.getElementById("q2TitleText").textContent = cfg.q2Title || DEFAULT_CONFIG.q2Title;
+      document.getElementById("q3TitleText").textContent = cfg.q3Title || DEFAULT_CONFIG.q3Title;
+    }
+
+    function renderHostControls() {
+      const cfg = appState.config;
+
+      if (document.activeElement?.id !== "actualWeightInput") {
+        document.getElementById("actualWeightInput").value = cfg.actualWeightVal || "";
+      }
+      if (document.activeElement?.id !== "actualHeightInput") {
+        document.getElementById("actualHeightInput").value = cfg.actualHeightCm || "";
+      }
+      if (document.activeElement?.id !== "actualZhuazhouInput") {
+        document.getElementById("actualZhuazhouInput").value = cfg.actualZhuazhouNote || "";
+      }
+
+      if (document.activeElement?.id !== "setupPartyTitle") {
+        document.getElementById("setupPartyTitle").value = cfg.partyTitle;
+      }
+      if (document.activeElement?.id !== "setupQ1Title") {
+        document.getElementById("setupQ1Title").value = cfg.q1Title;
+      }
+      if (document.activeElement?.id !== "setupQ2Title") {
+        document.getElementById("setupQ2Title").value = cfg.q2Title;
+      }
+      if (document.activeElement?.id !== "setupQ3Title") {
+        document.getElementById("setupQ3Title").value = cfg.q3Title;
+      }
+    }
+
+    function renderLeaderboardAndDraw() {
+      const prizeState = computePrizeState();
+
+      // 1. Update Status Banner & Auto-Qualify Button
+      const banner = document.getElementById("winnerLogicBanner");
+      banner.innerHTML = `<p>${prizeState.statusMessage}</p>`;
+
+      if (prizeState.autoQualifyCandidates && prizeState.autoQualifyCandidates.length > 0 && prizeState.confirmedWinners.length < 3) {
+        const autoBtn = document.createElement("button");
+        autoBtn.type = "button";
+        autoBtn.className = "mt-2.5 w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm shadow transition";
+        autoBtn.textContent = `✨ 一鍵確認呢 ${prizeState.autoQualifyCandidates.length} 位最高分得獎者！`;
+        autoBtn.onclick = () => {
+          const added = prizeState.autoQualifyCandidates.map((g) => ({
+            id: g.id,
+            name: g.name,
+            contact: g.contact || "",
+            score: g.score,
+            method: `累積 ${g.score} 分`
+          }));
+          const updated = [...prizeState.confirmedWinners, ...added].slice(0, 3);
+          saveConfigToCloud({ confirmedWinners: updated });
+          playWinChime();
+          triggerConfetti();
+          showToast("已確認最高分得獎者！🎉", "gold");
+        };
+        banner.appendChild(autoBtn);
+      }
+
+      // 2. Render 3 Winner Slots
+      const slotsGrid = document.getElementById("winnerSlotsGrid");
+      slotsGrid.innerHTML = "";
+      for (let i = 0; i < 3; i++) {
+        const w = prizeState.confirmedWinners[i];
+        const slot = document.createElement("div");
+        if (w) {
+          slot.className = "bg-gradient-to-br from-amber-100 to-pink-100 border-2 border-amber-400 rounded-2xl p-3 text-center relative shadow-sm";
+          slot.innerHTML = `
+            <div class="text-xs font-extrabold text-amber-800 mb-0.5">🎁 禮物 #${i + 1}</div>
+            <div class="font-extrabold text-base text-slate-900 truncate">${w.name}</div>
+            ${w.contact ? `<div class="text-[11px] text-slate-500 truncate">${w.contact}</div>` : ""}
+            <span class="inline-block mt-1 text-[10px] font-bold bg-white/80 text-pink-600 px-2 py-0.5 rounded-full">${w.method}</span>
+          `;
+        } else {
+          slot.className = "bg-white/70 border-2 border-dashed border-amber-200 rounded-2xl p-3 text-center flex flex-col items-center justify-center min-h-[88px]";
+          slot.innerHTML = `
+            <div class="text-xs font-bold text-slate-400">🎁 禮物 #${i + 1}</div>
+            <div class="text-xs text-slate-300 mt-1">等待誕生...</div>
+          `;
+        }
+        slotsGrid.appendChild(slot);
+      }
+
+      // 3. Render Lucky Draw Wheel
+      const candidates = prizeState.drawCandidates;
+      document.getElementById("drawPoolLabel").textContent = `抽獎池候選人 (${candidates.length}人)`;
+      const spinBtn = document.getElementById("btnSpinWheel");
+      spinBtn.disabled = appState.isSpinning || candidates.length === 0 || prizeState.confirmedWinners.length >= 3;
+      drawWheelCanvas(candidates, appState.wheelAngle);
+
+      // 4. Render Full Guest List with Closest-Wins Differences & Zhuazhou Toggle
+      const listContainer = document.getElementById("guestListContainer");
+      if (prizeState.ranked.length === 0) {
+        listContainer.innerHTML = `<p class="text-center text-sm text-slate-400 py-6">暫時未有賓客提交答案</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = "";
+      prizeState.ranked.forEach((g, idx) => {
+        const isWinner = prizeState.confirmedWinners.some((w) => w.id === g.id);
+        const item = document.createElement("div");
+        item.className = `p-3.5 rounded-2xl border space-y-2 text-xs sm:text-sm ${
+          isWinner ? "bg-amber-50 border-amber-300 shadow-sm" : "bg-white border-pink-100"
+        }`;
+
+        const wDisplay = `${g.q1Val} kg`;
+        const wDiffText = g.weightDiffKg !== null ? ` (差 ${g.weightDiffKg.toFixed(2)} kg)` : "";
+        const hDisplay = `${g.q2Val} cm`;
+        const hDiffText = g.heightDiffCm !== null ? ` (差 ${g.heightDiffCm.toFixed(1)} cm)` : "";
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+              <span class="font-extrabold text-slate-800 text-sm">${idx + 1}. ${g.name}</span>
+              ${g.contact ? `<span class="text-[11px] text-slate-400">(${g.contact})</span>` : ""}
+              ${isWinner ? `<span class="bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full">🏆 中獎</span>` : ""}
+            </div>
+            <span class="shrink-0 px-2.5 py-1 rounded-xl font-extrabold text-xs ${
+              g.score > 0 ? "bg-pink-100 text-pink-700" : "bg-slate-100 text-slate-500"
+            }">
+              ${g.score} / 3 分
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs bg-slate-50/80 p-2.5 rounded-xl">
+            <div class="${g.q1Won ? 'text-emerald-700 font-extrabold' : 'text-slate-600'}">
+              ⚖️ 體重：${wDisplay}<span class="text-[11px] opacity-80">${wDiffText}</span>
+              ${g.q1Won ? '<span class="ml-1 inline-block bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded">👑 最接近 +1</span>' : ''}
+            </div>
+            <div class="${g.q2Won ? 'text-emerald-700 font-extrabold' : 'text-slate-600'}">
+              📏 身高：${hDisplay}<span class="text-[11px] opacity-80">${hDiffText}</span>
+              ${g.q2Won ? '<span class="ml-1 inline-block bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded">👑 最接近 +1</span>' : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 pt-0.5">
+            <div class="text-xs ${g.q3Won ? 'text-emerald-700 font-extrabold' : 'text-slate-700'}">
+              🎁 抓周預測：<span class="underline decoration-pink-200">${g.q3Text}</span>
+            </div>
+            <button type="button" data-guest-id="${g.id}" data-matched="${g.q3Won ? '1' : '0'}"
+              class="btn-toggle-q3 shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold transition ${
+                g.q3Won
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : "bg-slate-100 hover:bg-pink-100 text-slate-600 hover:text-pink-700"
+              }">
+              ${g.q3Won ? "✅ 抓周答中 +1" : "⬜ 抓周當啱"}
+            </button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      // Bind Zhuazhou manual approval toggles
+      listContainer.querySelectorAll(".btn-toggle-q3").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const gid = btn.getAttribute("data-guest-id");
+          const current = btn.getAttribute("data-matched") === "1";
+          const nextVal = !current;
+          await toggleGuestZhuazhouMatch(gid, nextVal);
+        });
+      });
+    }
+
+    async function toggleGuestZhuazhouMatch(guestId, matchedBool) {
+      const target = appState.guests.find((g) => g.id === guestId);
+      if (target) target.q3Matched = matchedBool;
+      renderLeaderboardAndDraw();
+
+      if (db && guestsColRef && appState.user && !guestId.startsWith("local_")) {
+        try {
+          const gRef = doc(db, "artifacts", appId, "public", "data", "party_guests", guestId);
+          await updateDoc(gRef, { q3Matched: matchedBool });
+        } catch (err) {
+          console.error("Failed to toggle q3Matched:", err);
+        }
+      }
+    }
+
+    // ==========================================
+    // 6. SPINNING WHEEL CANVAS ENGINE
+    // ==========================================
+    const WHEEL_COLORS = [
+      "#F472B6", "#FBBF24", "#60A5FA", "#34D399", "#A78BFA",
+      "#FB7185", "#F59E0B", "#38BDF8", "#4ADE80", "#C084FC"
+    ];
+
+    function drawWheelCanvas(candidates, rotationRad) {
+      const canvas = document.getElementById("wheelCanvas");
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const size = 280;
+      if (canvas.width !== size * dpr) {
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, size, size);
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const radius = size / 2 - 4;
+
+      if (!candidates || candidates.length === 0) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#FDF2F8";
+        ctx.fill();
+        ctx.fillStyle = "#9D174D";
+        ctx.font = "bold 14px 'Noto Sans TC', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("暫無待抽獎候選人", cx, cy);
+        ctx.restore();
+        return;
+      }
+
+      const sliceAngle = (Math.PI * 2) / candidates.length;
+
+      candidates.forEach((cand, i) => {
+        const start = rotationRad + i * sliceAngle;
+        const end = start + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, end);
+        ctx.closePath();
+        ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.stroke();
+
+        // Draw guest name
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 13px 'Noto Sans TC', sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = 3;
+        const label = cand.name.length > 8 ? cand.name.slice(0, 7) + "…" : cand.name;
+        ctx.fillText(label, radius - 16, 4);
+        ctx.restore();
+      });
+
+      // Center decorative hub
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#F59E0B";
+      ctx.stroke();
+
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🎂", cx, cy + 1);
+
+      ctx.restore();
+    }
+
+    function spinLuckyWheel() {
+      const prizeState = computePrizeState();
+      const candidates = prizeState.drawCandidates;
+      if (appState.isSpinning || candidates.length === 0 || prizeState.confirmedWinners.length >= 3) return;
+
+      appState.isSpinning = true;
+      document.getElementById("btnSpinWheel").disabled = true;
+
+      // Pick random winner index beforehand so physics lands cleanly on them
+      const chosenIndex = Math.floor(Math.random() * candidates.length);
+      const chosenGuest = candidates[chosenIndex];
+
+      const sliceAngle = (Math.PI * 2) / candidates.length;
+      // Pointer is at top (-Math.PI / 2)
+      const targetSliceCenter = chosenIndex * sliceAngle + sliceAngle / 2;
+      const desiredFinalMod = ((-Math.PI / 2 - targetSliceCenter) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+
+      const currentMod = ((appState.wheelAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const deltaMod = ((desiredFinalMod - currentMod) + Math.PI * 2) % (Math.PI * 2);
+      const extraSpins = 6 * Math.PI * 2; // 6 full spins
+      const startAngle = appState.wheelAngle;
+      const totalDelta = extraSpins + deltaMod;
+
+      const duration = 3800; // 3.8 seconds
+      const startTime = performance.now();
+      let lastSliceIdx = -1;
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        const easeOut = 1 - Math.pow(1 - t, 3);
+        appState.wheelAngle = startAngle + totalDelta * easeOut;
+        drawWheelCanvas(candidates, appState.wheelAngle);
+
+        // Play subtle tick sound whenever pointer crosses a slice boundary
+        const currentSliceIdx = Math.floor((((appState.wheelAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / sliceAngle);
+        if (currentSliceIdx !== lastSliceIdx) {
+          lastSliceIdx = currentSliceIdx;
+          playTickSound();
+        }
+
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          appState.isSpinning = false;
+          const newWinner = {
+            id: chosenGuest.id,
+            name: chosenGuest.name,
+            contact: chosenGuest.contact || "",
+            score: chosenGuest.score,
+            method: chosenGuest.score > 0 ? `同分抽獎 (${chosenGuest.score}分)` : "幸運大抽獎"
+          };
+          const updatedWinners = [...prizeState.confirmedWinners, newWinner].slice(0, 3);
+          saveConfigToCloud({ confirmedWinners: updatedWinners });
+          playWinChime();
+          triggerConfetti();
+          showToast(`🎉 恭喜【${chosenGuest.name}】贏得禮物！`, "gold");
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === "function") {
+        confetti({
+          particleCount: 90,
+          spread: 75,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // ==========================================
+    // 7. QR CODE GENERATION
+    // ==========================================
+    function generateQrCodes() {
+      const url = window.location.href;
+      const targets = ["hostQrContainer", "modalQrContainer"];
+      targets.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = "";
+        new QRCode(el, {
+          text: url,
+          width: id === "modalQrContainer" ? 230 : 180,
+          height: id === "modalQrContainer" ? 230 : 180,
+          colorDark: "#831843",
+          colorLight: "#FFFFFF",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      });
+    }
+
+    // ==========================================
+    // 8. EVENT LISTENERS
+    // ==========================================
+    // 1. DEFAULT CONFIG & STATE (Per-Question Prizes, Strictly kg)
+    // ==========================================
+    const DEFAULT_CONFIG = {
+      partyTitle: "🎂 1st Birthday Party 生日派對問答遊戲",
+      photoBase64: "",
+      q1Title: "估下我宜家幾重？(kg) ⚖️",
+      q2Title: "估下我宜家幾高？(cm) 📏",
+      q3Title: "抓周我會拎啲咩？🎁",
+      actualWeightVal: "",
+      actualHeightCm: "",
+      actualZhuazhouNote: "",
+      prize1Winner: null, // { id, name, contact, detail }
+      prize2Winner: null, // { id, name, contact, detail }
+      prize3Winner: null  // { id, name, contact, detail }
+    };
+
+    let appState = {
+      config: { ...DEFAULT_CONFIG },
+      guests: [],
+      isHostUnlocked: false,
+      currentView: "guest", // 'guest' | 'host'
+      wheelAngle: 0,
+      isSpinning: false,
+      activeWheelContext: null, // { prizeKey: 'prize1Winner'|'prize2Winner'|'prize3Winner', title, badge, desc, candidates, detailLabel }
+      user: null
+    };
+
+    // ==========================================
+    // 2. SOUND EFFECTS & HELPERS
+    // ==========================================
+    function playTickSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(620, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    function playWinChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime + idx * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.1 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + idx * 0.1);
+          osc.stop(ctx.currentTime + idx * 0.1 + 0.35);
+        });
+      } catch (e) {}
+    }
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const el = document.createElement("div");
+      const colors = {
+        success: "bg-emerald-600 text-white",
+        error: "bg-rose-600 text-white",
+        gold: "bg-gradient-to-r from-amber-500 to-pink-500 text-white",
+        info: "bg-slate-800 text-white"
+      };
+      el.className = `${colors[type] || colors.info} px-4 py-3 rounded-2xl shadow-xl text-xs sm:text-sm font-bold text-center transition-all duration-300 transform translate-y-0 opacity-100`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.classList.add("opacity-0", "-translate-y-2");
+        setTimeout(() => el.remove(), 300);
+      }, 3200);
+    }
+
+    function showConfirm(title, desc, onConfirm) {
+      const modal = document.getElementById("confirmModal");
+      document.getElementById("confirmTitle").textContent = title;
+      document.getElementById("confirmDesc").textContent = desc;
+      modal.classList.remove("hidden");
+
+      const yesBtn = document.getElementById("btnConfirmYes");
+      const noBtn = document.getElementById("btnConfirmNo");
+      const cleanup = () => modal.classList.add("hidden");
+
+      yesBtn.onclick = () => {
+        cleanup();
+        onConfirm();
+      };
+      noBtn.onclick = cleanup;
+    }
+
+    function copyTextFallback(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("已複製遊戲連結！可以貼去 WhatsApp 群組啦 📋", "success");
+      } catch (err) {
+        showToast("複製失敗，請手動複製瀏覽器網址", "error");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function compressImageToBase64(file, maxDim = 360) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let w = img.width;
+            let h = img.height;
+            if (w > h && w > maxDim) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else if (h >= w && h > maxDim) {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", 0.8));
+          };
+          img.onerror = reject;
+          img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ==========================================
+    // 3. FIREBASE & LOCALSTORAGE PERSISTENCE
+    // ==========================================
+    let db = null;
+    let configDocRef = null;
+    let guestsColRef = null;
+    const appId = typeof __app_id !== "undefined" ? __app_id : "birthday-quiz-app";
+
+    function saveLocalBackup() {
+      try {
+        localStorage.setItem("bday_quiz_config_v3", JSON.stringify(appState.config));
+        localStorage.setItem("bday_quiz_guests_v3", JSON.stringify(appState.guests));
+      } catch (e) {}
+    }
+
+    function loadLocalBackup() {
+      try {
+        const savedCfg = localStorage.getItem("bday_quiz_config_v3");
+        const savedGuests = localStorage.getItem("bday_quiz_guests_v3");
+        if (savedCfg) appState.config = { ...DEFAULT_CONFIG, ...JSON.parse(savedCfg) };
+        if (savedGuests) appState.guests = JSON.parse(savedGuests);
+      } catch (e) {}
+    }
+
+    async function saveConfigToCloud(partialObj) {
+      appState.config = { ...appState.config, ...partialObj };
+      saveLocalBackup();
+      renderAll();
+
+      if (db && configDocRef && appState.user) {
+        try {
+          await setDoc(configDocRef, appState.config, { merge: true });
+        } catch (err) {
+          console.error("Cloud config sync error:", err);
+        }
+      }
+    }
+
+    async function initFirebase() {
+      loadLocalBackup();
+      renderAll();
+
+      try {
+        if (typeof __firebase_config === "undefined" || !__firebase_config) return;
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        db = getFirestore(app);
+
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          appState.user = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          appState.user = cred.user;
+        }
+
+        configDocRef = doc(db, "artifacts", appId, "public", "data", "party_config", "main");
+        guestsColRef = collection(db, "artifacts", appId, "public", "data", "party_guests");
+
+        onSnapshot(configDocRef, (snap) => {
+          if (snap.exists()) {
+            appState.config = { ...DEFAULT_CONFIG, ...snap.data() };
+            saveLocalBackup();
+            renderAll();
+          }
+        }, (err) => console.error("Config snapshot error:", err));
+
+        onSnapshot(guestsColRef, (snap) => {
+          const list = [];
+          snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+          list.sort((a, b) => (a.submittedAt || 0) - (b.submittedAt || 0));
+          appState.guests = list;
+          saveLocalBackup();
+          renderAll();
+        }, (err) => console.error("Guests snapshot error:", err));
+      } catch (err) {
+        console.warn("Running in localStorage fallback mode:", err);
+      }
+    }
+
+    // ==========================================
+    // 4. PER-QUESTION EVALUATION & LUCKY DRAW LOGIC
+    // ==========================================
+    function evaluateAllQuestions() {
+      const cfg = appState.config;
+      const actualKg = parseFloat(cfg.actualWeightVal);
+      const hasActualWeight = !isNaN(actualKg) && actualKg > 0;
+      const actualCm = parseFloat(cfg.actualHeightCm);
+      const hasActualHeight = !isNaN(actualCm) && actualCm > 0;
+      const noteClean = (cfg.actualZhuazhouNote || "").trim().toLowerCase();
+
+      const guests = appState.guests.map((g) => {
+        const gKg = parseFloat(g.q1Val);
+        const weightDiffKg = (hasActualWeight && !isNaN(gKg) && gKg > 0) ? Math.abs(gKg - actualKg) : null;
+
+        const gCm = parseFloat(g.q2Val);
+        const heightDiffCm = (hasActualHeight && !isNaN(gCm) && gCm > 0) ? Math.abs(gCm - actualCm) : null;
+
+        const autoTextMatch = noteClean.length > 0 && (g.q3Text || "").trim().toLowerCase() === noteClean;
+        const q3Matched = typeof g.q3Matched === "boolean" ? g.q3Matched : autoTextMatch;
+
+        return {
+          ...g,
+          weightDiffKg,
+          heightDiffCm,
+          q3Matched,
+          isQ1Closest: false,
+          isQ2Closest: false
+        };
+      });
+
+      // Question 1: Closest weight in kg
+      const validWeightDiffs = guests.map((g) => g.weightDiffKg).filter((d) => d !== null);
+      const minWeightDiff = validWeightDiffs.length > 0 ? Math.min(...validWeightDiffs) : null;
+      const q1Finalists = [];
+      if (minWeightDiff !== null) {
+        guests.forEach((g) => {
+          if (g.weightDiffKg !== null && Math.abs(g.weightDiffKg - minWeightDiff) < 0.005) {
+            g.isQ1Closest = true;
+            q1Finalists.push(g);
+          }
+        });
+      }
+
+      // Question 2: Closest height in cm
+      const validHeightDiffs = guests.map((g) => g.heightDiffCm).filter((d) => d !== null);
+      const minHeightDiff = validHeightDiffs.length > 0 ? Math.min(...validHeightDiffs) : null;
+      const q2Finalists = [];
+      if (minHeightDiff !== null) {
+        guests.forEach((g) => {
+          if (g.heightDiffCm !== null && Math.abs(g.heightDiffCm - minHeightDiff) < 0.05) {
+            g.isQ2Closest = true;
+            q2Finalists.push(g);
+          }
+        });
+      }
+
+      // Question 3: All guests marked correct for Zhuazhou
+      const q3CorrectGuests = guests.filter((g) => g.q3Matched);
+
+      return {
+        guests,
+        hasActualWeight,
+        actualKg,
+        minWeightDiff,
+        q1Finalists,
+        hasActualHeight,
+        actualCm,
+        minHeightDiff,
+        q2Finalists,
+        q3CorrectGuests
+      };
+    }
+
+    // ==========================================
+    // 5. RENDERING FUNCTIONS
+    // ==========================================
+    function renderAll() {
+      renderHeaderAndPhoto();
+      renderGuestQuestionTitles();
+      renderHostControls();
+      renderThreePrizesAndLists();
+    }
+
+    function renderHeaderAndPhoto() {
+      document.getElementById("partyTitleDisplay").textContent = appState.config.partyTitle || DEFAULT_CONFIG.partyTitle;
+      const imgEl = document.getElementById("babyPhotoImg");
+      const fallbackEl = document.getElementById("babyAvatarFallback");
+
+      if (appState.config.photoBase64) {
+        imgEl.src = appState.config.photoBase64;
+        imgEl.classList.remove("hidden");
+        fallbackEl.classList.add("hidden");
+      } else {
+        imgEl.classList.add("hidden");
+        fallbackEl.classList.remove("hidden");
+      }
+
+      document.getElementById("liveGuestCount").textContent = appState.guests.length;
+      document.getElementById("hostCountBadge").textContent = appState.guests.length;
+    }
+
+    function renderGuestQuestionTitles() {
+      const cfg = appState.config;
+      document.getElementById("q1TitleText").textContent = cfg.q1Title || DEFAULT_CONFIG.q1Title;
+      document.getElementById("q2TitleText").textContent = cfg.q2Title || DEFAULT_CONFIG.q2Title;
+      document.getElementById("q3TitleText").textContent = cfg.q3Title || DEFAULT_CONFIG.q3Title;
+    }
+
+    function renderHostControls() {
+      const cfg = appState.config;
+
+      if (document.activeElement?.id !== "actualWeightInput") {
+        document.getElementById("actualWeightInput").value = cfg.actualWeightVal || "";
+      }
+      if (document.activeElement?.id !== "actualHeightInput") {
+        document.getElementById("actualHeightInput").value = cfg.actualHeightCm || "";
+      }
+      if (document.activeElement?.id !== "actualZhuazhouInput") {
+        document.getElementById("actualZhuazhouInput").value = cfg.actualZhuazhouNote || "";
+      }
+
+      if (document.activeElement?.id !== "setupPartyTitle") {
+        document.getElementById("setupPartyTitle").value = cfg.partyTitle;
+      }
+      if (document.activeElement?.id !== "setupQ1Title") {
+        document.getElementById("setupQ1Title").value = cfg.q1Title;
+      }
+      if (document.activeElement?.id !== "setupQ2Title") {
+        document.getElementById("setupQ2Title").value = cfg.q2Title;
+      }
+      if (document.activeElement?.id !== "setupQ3Title") {
+        document.getElementById("setupQ3Title").value = cfg.q3Title;
+      }
+    }
+
+    function renderThreePrizesAndLists() {
+      const evalData = evaluateAllQuestions();
+      const cfg = appState.config;
+
+      // ------------------------------------------
+      // RENDER PRIZE 1: WEIGHT (kg)
+      // ------------------------------------------
+      const p1Box = document.getElementById("prize1ResultBox");
+      const btnReset1 = document.getElementById("btnResetPrize1");
+      p1Box.innerHTML = "";
+
+      if (cfg.prize1Winner) {
+        btnReset1.classList.remove("hidden");
+        p1Box.innerHTML = `
+          <div class="bg-gradient-to-r from-pink-100 to-amber-100 border-2 border-pink-400 rounded-2xl p-3.5 text-center space-y-1">
+            <div class="text-xs font-extrabold text-pink-700">🏆 禮物一得獎者（最接近體重）</div>
+            <div class="text-xl font-black text-slate-900">${cfg.prize1Winner.name} ${cfg.prize1Winner.contact ? `<span class="text-xs font-bold text-slate-500">(${cfg.prize1Winner.contact})</span>` : ""}</div>
+            <div class="text-xs font-bold text-pink-700">${cfg.prize1Winner.detail}</div>
+          </div>
+        `;
+      } else {
+        btnReset1.classList.add("hidden");
+        if (evalData.guests.length === 0) {
+          p1Box.innerHTML = `<p class="text-xs text-slate-400">暫時未有賓客提交答案。</p>`;
+        } else if (!evalData.hasActualWeight) {
+          p1Box.innerHTML = `<p class="text-xs text-slate-500">請喺上面輸入實際體重（kg），系統會自動搵出最接近嘅賓客。</p>`;
+        } else if (evalData.q1Finalists.length === 1) {
+          const f = evalData.q1Finalists[0];
+          const detailStr = `預測 ${f.q1Val} kg（誤差 ${f.weightDiffKg.toFixed(2)} kg）`;
+          p1Box.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <div>
+                <div class="text-xs font-extrabold text-emerald-700">👑 全場唯一最接近！</div>
+                <div class="font-extrabold text-base text-slate-900">${f.name} ${f.contact ? `(${f.contact})` : ""}</div>
+                <div class="text-xs text-emerald-800">${detailStr}</div>
+              </div>
+              <button type="button" id="btnConfirmP1Single" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow shrink-0">
+                ✨ 確認頒發禮物一
+              </button>
+            </div>
+          `;
+          document.getElementById("btnConfirmP1Single").onclick = () => {
+            saveConfigToCloud({
+              prize1Winner: { id: f.id, name: f.name, contact: f.contact || "", detail: detailStr }
+            });
+            playWinChime();
+            triggerConfetti();
+            showToast(`恭喜【${f.name}】贏得禮物一！🎉`, "gold");
+          };
+        } else if (evalData.q1Finalists.length >= 2) {
+          const names = evalData.q1Finalists.map((f) => `${f.name} (${f.q1Val}kg)`).join("、");
+          p1Box.innerHTML = `
+            <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2.5">
+              <div class="text-xs font-extrabold text-amber-800">🔥 有 ${evalData.q1Finalists.length} 位賓客同樣最接近（誤差 ${evalData.minWeightDiff.toFixed(2)} kg）！</div>
+              <div class="text-xs text-slate-700 font-bold">入圍名單：${names}</div>
+              <button type="button" id="btnDrawP1Tie" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm shadow">
+                🎰 開啟禮物一抽獎轉盤（${evalData.q1Finalists.length} 抽 1）
+              </button>
+            </div>
+          `;
+          document.getElementById("btnDrawP1Tie").onclick = () => {
+            openWheelModal({
+              prizeKey: "prize1Winner",
+              badge: "🎁 禮物一：最接近體重獎",
+              title: "同分決戰！抽出禮物一得獎者",
+              desc: `以下 ${evalData.q1Finalists.length} 位賓客誤差同樣為 ${evalData.minWeightDiff.toFixed(2)} kg`,
+              candidates: evalData.q1Finalists,
+              getDetail: (g) => `預測 ${g.q1Val} kg（同分抽獎勝出，誤差 ${g.weightDiffKg.toFixed(2)} kg）`
+            });
+          };
+        }
+      }
+
+      // ------------------------------------------
+      // RENDER PRIZE 2: HEIGHT (cm)
+      // ------------------------------------------
+      const p2Box = document.getElementById("prize2ResultBox");
+      const btnReset2 = document.getElementById("btnResetPrize2");
+      p2Box.innerHTML = "";
+
+      if (cfg.prize2Winner) {
+        btnReset2.classList.remove("hidden");
+        p2Box.innerHTML = `
+          <div class="bg-gradient-to-r from-amber-100 to-pink-100 border-2 border-amber-400 rounded-2xl p-3.5 text-center space-y-1">
+            <div class="text-xs font-extrabold text-amber-800">🏆 禮物二得獎者（最接近身高）</div>
+            <div class="text-xl font-black text-slate-900">${cfg.prize2Winner.name} ${cfg.prize2Winner.contact ? `<span class="text-xs font-bold text-slate-500">(${cfg.prize2Winner.contact})</span>` : ""}</div>
+            <div class="text-xs font-bold text-amber-800">${cfg.prize2Winner.detail}</div>
+          </div>
+        `;
+      } else {
+        btnReset2.classList.add("hidden");
+        if (evalData.guests.length === 0) {
+          p2Box.innerHTML = `<p class="text-xs text-slate-400">暫時未有賓客提交答案。</p>`;
+        } else if (!evalData.hasActualHeight) {
+          p2Box.innerHTML = `<p class="text-xs text-slate-500">請喺上面輸入實際身高（cm），系統會自動搵出最接近嘅賓客。</p>`;
+        } else if (evalData.q2Finalists.length === 1) {
+          const f = evalData.q2Finalists[0];
+          const detailStr = `預測 ${f.q2Val} cm（誤差 ${f.heightDiffCm.toFixed(1)} cm）`;
+          p2Box.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <div>
+                <div class="text-xs font-extrabold text-emerald-700">👑 全場唯一最接近！</div>
+                <div class="font-extrabold text-base text-slate-900">${f.name} ${f.contact ? `(${f.contact})` : ""}</div>
+                <div class="text-xs text-emerald-800">${detailStr}</div>
+              </div>
+              <button type="button" id="btnConfirmP2Single" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow shrink-0">
+                ✨ 確認頒發禮物二
+              </button>
+            </div>
+          `;
+          document.getElementById("btnConfirmP2Single").onclick = () => {
+            saveConfigToCloud({
+              prize2Winner: { id: f.id, name: f.name, contact: f.contact || "", detail: detailStr }
+            });
+            playWinChime();
+            triggerConfetti();
+            showToast(`恭喜【${f.name}】贏得禮物二！🎉`, "gold");
+          };
+        } else if (evalData.q2Finalists.length >= 2) {
+          const names = evalData.q2Finalists.map((f) => `${f.name} (${f.q2Val}cm)`).join("、");
+          p2Box.innerHTML = `
+            <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2.5">
+              <div class="text-xs font-extrabold text-amber-800">🔥 有 ${evalData.q2Finalists.length} 位賓客同樣最接近（誤差 ${evalData.minHeightDiff.toFixed(1)} cm）！</div>
+              <div class="text-xs text-slate-700 font-bold">入圍名單：${names}</div>
+              <button type="button" id="btnDrawP2Tie" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-pink-500 hover:from-amber-600 hover:to-pink-600 text-white font-extrabold text-xs sm:text-sm shadow">
+                🎰 開啟禮物二抽獎轉盤（${evalData.q2Finalists.length} 抽 1）
+              </button>
+            </div>
+          `;
+          document.getElementById("btnDrawP2Tie").onclick = () => {
+            openWheelModal({
+              prizeKey: "prize2Winner",
+              badge: "🎁 禮物二：最接近身高獎",
+              title: "同分決戰！抽出禮物二得獎者",
+              desc: `以下 ${evalData.q2Finalists.length} 位賓客誤差同樣為 ${evalData.minHeightDiff.toFixed(1)} cm`,
+              candidates: evalData.q2Finalists,
+              getDetail: (g) => `預測 ${g.q2Val} cm（同分抽獎勝出，誤差 ${g.heightDiffCm.toFixed(1)} cm）`
+            });
+          };
+        }
+      }
+
+      // ------------------------------------------
+      // RENDER PRIZE 3: ZHUAZHOU CHECKLIST & LUCKY DRAW
+      // ------------------------------------------
+      const q3Checklist = document.getElementById("q3ChecklistContainer");
+      const q3MatchedBadge = document.getElementById("q3MatchedCountBadge");
+      q3MatchedBadge.textContent = `${evalData.q3CorrectGuests.length} 人答中`;
+
+      if (evalData.guests.length === 0) {
+        q3Checklist.innerHTML = `<p class="text-xs text-slate-400 text-center py-3">暫時未有賓客提交答案</p>`;
+      } else {
+        q3Checklist.innerHTML = "";
+        evalData.guests.forEach((g) => {
+          const row = document.createElement("div");
+          row.className = `flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-xs ${
+            g.q3Matched ? "bg-emerald-50 border-emerald-300" : "bg-white border-slate-200"
+          }`;
+          row.innerHTML = `
+            <div class="min-w-0">
+              <span class="font-extrabold text-slate-800">${g.name}</span>
+              <span class="text-slate-400">：</span>
+              <span class="font-bold ${g.q3Matched ? "text-emerald-700" : "text-pink-600"}">${g.q3Text}</span>
+            </div>
+            <button type="button" data-gid="${g.id}" data-matched="${g.q3Matched ? "1" : "0"}"
+              class="btn-q3-check shrink-0 px-2.5 py-1 rounded-lg font-extrabold text-[11px] transition ${
+                g.q3Matched ? "bg-emerald-500 text-white shadow-sm" : "bg-slate-100 hover:bg-emerald-100 text-slate-600"
+              }">
+              ${g.q3Matched ? "✅ 答中" : "⬜ 標記答中"}
+            </button>
+          `;
+          q3Checklist.appendChild(row);
+        });
+
+        q3Checklist.querySelectorAll(".btn-q3-check").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const gid = btn.getAttribute("data-gid");
+            const nextVal = btn.getAttribute("data-matched") !== "1";
+            await toggleGuestZhuazhouMatch(gid, nextVal);
+          });
+        });
+      }
+
+      const p3Box = document.getElementById("prize3ResultBox");
+      const btnReset3 = document.getElementById("btnResetPrize3");
+      p3Box.innerHTML = "";
+
+      if (cfg.prize3Winner) {
+        btnReset3.classList.remove("hidden");
+        p3Box.innerHTML = `
+          <div class="bg-gradient-to-r from-emerald-100 to-amber-100 border-2 border-emerald-400 rounded-2xl p-3.5 text-center space-y-1">
+            <div class="text-xs font-extrabold text-emerald-800">🏆 禮物三得獎者（抓周神算獎）</div>
+            <div class="text-xl font-black text-slate-900">${cfg.prize3Winner.name} ${cfg.prize3Winner.contact ? `<span class="text-xs font-bold text-slate-500">(${cfg.prize3Winner.contact})</span>` : ""}</div>
+            <div class="text-xs font-bold text-emerald-800">${cfg.prize3Winner.detail}</div>
+          </div>
+        `;
+      } else {
+        btnReset3.classList.add("hidden");
+        if (evalData.guests.length === 0) {
+          p3Box.innerHTML = `<p class="text-xs text-slate-400">暫時未有賓客提交答案。</p>`;
+        } else if (evalData.q3CorrectGuests.length === 1) {
+          const f = evalData.q3CorrectGuests[0];
+          const detailStr = `唯一估中「${f.q3Text}」`;
+          p3Box.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+              <div>
+                <div class="text-xs font-extrabold text-emerald-700">🎯 全場唯一估中抓周！</div>
+                <div class="font-extrabold text-base text-slate-900">${f.name} ${f.contact ? `(${f.contact})` : ""}</div>
+                <div class="text-xs text-emerald-800">${detailStr}</div>
+              </div>
+              <button type="button" id="btnConfirmP3Single" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs shadow shrink-0">
+                ✨ 確認頒發禮物三
+              </button>
+            </div>
+          `;
+          document.getElementById("btnConfirmP3Single").onclick = () => {
+            saveConfigToCloud({
+              prize3Winner: { id: f.id, name: f.name, contact: f.contact || "", detail: detailStr }
+            });
+            playWinChime();
+            triggerConfetti();
+            showToast(`恭喜【${f.name}】贏得禮物三！🎉`, "gold");
+          };
+        } else if (evalData.q3CorrectGuests.length >= 2) {
+          const names = evalData.q3CorrectGuests.map((f) => f.name).join("、");
+          p3Box.innerHTML = `
+            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-3 space-y-2.5">
+              <div class="text-xs font-extrabold text-emerald-800">🎉 有 ${evalData.q3CorrectGuests.length} 位賓客都估中抓周！即刻轉盤抽出 1 位幸運兒！</div>
+              <div class="text-xs text-slate-700 font-bold">答中名單：${names}</div>
+              <button type="button" id="btnDrawP3Many" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-600 hover:to-amber-600 text-white font-extrabold text-xs sm:text-sm shadow">
+                🎰 開啟抓周幸運大抽獎（${evalData.q3CorrectGuests.length} 抽 1）
+              </button>
+            </div>
+          `;
+          document.getElementById("btnDrawP3Many").onclick = () => {
+            openWheelModal({
+              prizeKey: "prize3Winner",
+              badge: "🎁 禮物三：抓周神算獎",
+              title: "多人估中！抽出抓周幸運兒",
+              desc: `以下 ${evalData.q3CorrectGuests.length} 位賓客都估中壽星女抓周物品！`,
+              candidates: evalData.q3CorrectGuests,
+              getDetail: (g) => `估中「${g.q3Text}」（${evalData.q3CorrectGuests.length} 人答中大抽獎勝出）`
+            });
+          };
+        } else {
+          // 0 people guessed right -> offer all-guest fallback lucky draw
+          p3Box.innerHTML = `
+            <div class="bg-amber-50/80 border border-amber-200 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div class="text-xs text-amber-900">
+                未標記任何答中賓客。如果無人估中，可以改為全場抽獎送出禮物三！
+              </div>
+              <button type="button" id="btnDrawP3FallbackAll" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow shrink-0">
+                🎰 無人答中？改為全場大抽獎
+              </button>
+            </div>
+          `;
+          document.getElementById("btnDrawP3FallbackAll").onclick = () => {
+            openWheelModal({
+              prizeKey: "prize3Winner",
+              badge: "🎁 禮物三：全場幸運大抽獎",
+              title: "全場大抽獎！抽出禮物三幸運兒",
+              desc: `從全部 ${evalData.guests.length} 位參加賓客中抽出 1 位幸運兒！`,
+              candidates: evalData.guests,
+              getDetail: (g) => `全場幸運大抽獎勝出（預測：${g.q3Text}）`
+            });
+          };
+        }
+      }
+
+      // ------------------------------------------
+      // RENDER FULL GUEST OVERVIEW LIST
+      // ------------------------------------------
+      const listContainer = document.getElementById("guestListContainer");
+      if (evalData.guests.length === 0) {
+        listContainer.innerHTML = `<p class="text-center text-sm text-slate-400 py-6">暫時未有賓客提交答案</p>`;
+        return;
+      }
+
+      listContainer.innerHTML = "";
+      evalData.guests.forEach((g, idx) => {
+        const wonBadges = [];
+        if (cfg.prize1Winner?.id === g.id) wonBadges.push("🏆 禮物一");
+        if (cfg.prize2Winner?.id === g.id) wonBadges.push("🏆 禮物二");
+        if (cfg.prize3Winner?.id === g.id) wonBadges.push("🏆 禮物三");
+
+        const item = document.createElement("div");
+        item.className = `p-3.5 rounded-2xl border space-y-2 text-xs sm:text-sm ${
+          wonBadges.length > 0 ? "bg-amber-50 border-amber-300 shadow-sm" : "bg-white border-pink-100"
+        }`;
+
+        const wDiffText = g.weightDiffKg !== null ? ` (差 ${g.weightDiffKg.toFixed(2)} kg)` : "";
+        const hDiffText = g.heightDiffCm !== null ? ` (差 ${g.heightDiffCm.toFixed(1)} cm)` : "";
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+              <span class="font-extrabold text-slate-800 text-sm">${idx + 1}. ${g.name}</span>
+              ${g.contact ? `<span class="text-[11px] text-slate-400">(${g.contact})</span>` : ""}
+              ${wonBadges.map((b) => `<span class="bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full">${b}</span>`).join("")}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-xs bg-slate-50/80 p-2.5 rounded-xl">
+            <div class="${g.isQ1Closest ? "text-pink-700 font-extrabold" : "text-slate-600"}">
+              ⚖️ ${g.q1Val} kg<span class="text-[11px] opacity-80">${wDiffText}</span>
+              ${g.isQ1Closest ? '<span class="ml-1 inline-block bg-pink-100 text-pink-700 text-[10px] px-1.5 py-0.5 rounded">👑 最近</span>' : ""}
+            </div>
+            <div class="${g.isQ2Closest ? "text-amber-700 font-extrabold" : "text-slate-600"}">
+              📏 ${g.q2Val} cm<span class="text-[11px] opacity-80">${hDiffText}</span>
+              ${g.isQ2Closest ? '<span class="ml-1 inline-block bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded">👑 最近</span>' : ""}
+            </div>
+            <div class="${g.q3Matched ? "text-emerald-700 font-extrabold" : "text-slate-600"}">
+              🎁 ${g.q3Text}
+              ${g.q3Matched ? '<span class="ml-1 inline-block bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded">✅ 答中</span>' : ""}
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    async function toggleGuestZhuazhouMatch(guestId, matchedBool) {
+      const target = appState.guests.find((g) => g.id === guestId);
+      if (target) target.q3Matched = matchedBool;
+      renderThreePrizesAndLists();
+
+      if (db && guestsColRef && appState.user && !guestId.startsWith("local_")) {
+        try {
+          const gRef = doc(db, "artifacts", appId, "public", "data", "party_guests", guestId);
+          await updateDoc(gRef, { q3Matched: matchedBool });
+        } catch (err) {
+          console.error("Failed to toggle q3Matched:", err);
+        }
+      }
+    }
+
+    // ==========================================
+    // 6. PER-QUESTION SPINNING WHEEL MODAL ENGINE
+    // ==========================================
+    const WHEEL_COLORS = [
+      "#F472B6", "#FBBF24", "#60A5FA", "#34D399", "#A78BFA",
+      "#FB7185", "#F59E0B", "#38BDF8", "#4ADE80", "#C084FC"
+    ];
+
+    function openWheelModal(ctxObj) {
+      if (!ctxObj || !ctxObj.candidates || ctxObj.candidates.length === 0) return;
+      appState.activeWheelContext = ctxObj;
+      appState.wheelAngle = 0;
+      appState.isSpinning = false;
+
+      document.getElementById("wheelModalBadge").textContent = ctxObj.badge;
+      document.getElementById("wheelModalTitle").textContent = ctxObj.title;
+      document.getElementById("wheelModalDesc").textContent = ctxObj.desc;
+      const spinBtn = document.getElementById("btnSpinWheel");
+      spinBtn.disabled = false;
+      spinBtn.textContent = "🎰 轉動幸運輪抽出得獎者！";
+
+      document.getElementById("wheelModal").classList.remove("hidden");
+      drawWheelCanvas(ctxObj.candidates, 0);
+    }
+
+    function drawWheelCanvas(candidates, rotationRad) {
+      const canvas = document.getElementById("wheelCanvas");
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const size = 280;
+      if (canvas.width !== size * dpr) {
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, size, size);
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const radius = size / 2 - 4;
+
+      if (!candidates || candidates.length === 0) {
+        ctx.restore();
+        return;
+      }
+
+      const sliceAngle = (Math.PI * 2) / candidates.length;
+
+      candidates.forEach((cand, i) => {
+        const start = rotationRad + i * sliceAngle;
+        const end = start + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, start, end);
+        ctx.closePath();
+        ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(start + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 13px 'Noto Sans TC', sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+        ctx.shadowBlur = 3;
+        const label = cand.name.length > 8 ? cand.name.slice(0, 7) + "…" : cand.name;
+        ctx.fillText(label, radius - 16, 4);
+        ctx.restore();
+      });
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#F59E0B";
+      ctx.stroke();
+
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🎂", cx, cy + 1);
+
+      ctx.restore();
+    }
+
+    function spinLuckyWheel() {
+      const ctxObj = appState.activeWheelContext;
+      if (!ctxObj || appState.isSpinning || !ctxObj.candidates || ctxObj.candidates.length === 0) return;
+
+      const candidates = ctxObj.candidates;
+      appState.isSpinning = true;
+      const spinBtn = document.getElementById("btnSpinWheel");
+      spinBtn.disabled = true;
+      spinBtn.textContent = "🎲 抽獎中...";
+
+      const chosenIndex = Math.floor(Math.random() * candidates.length);
+      const chosenGuest = candidates[chosenIndex];
+
+      const sliceAngle = (Math.PI * 2) / candidates.length;
+      const targetSliceCenter = chosenIndex * sliceAngle + sliceAngle / 2;
+      const desiredFinalMod = ((-Math.PI / 2 - targetSliceCenter) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+
+      const currentMod = ((appState.wheelAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const deltaMod = ((desiredFinalMod - currentMod) + Math.PI * 2) % (Math.PI * 2);
+      const extraSpins = 6 * Math.PI * 2;
+      const startAngle = appState.wheelAngle;
+      const totalDelta = extraSpins + deltaMod;
+
+      const duration = 3800;
+      const startTime = performance.now();
+      let lastSliceIdx = -1;
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        const easeOut = 1 - Math.pow(1 - t, 3);
+        appState.wheelAngle = startAngle + totalDelta * easeOut;
+        drawWheelCanvas(candidates, appState.wheelAngle);
+
+        const currentSliceIdx = Math.floor((((appState.wheelAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / sliceAngle);
+        if (currentSliceIdx !== lastSliceIdx) {
+          lastSliceIdx = currentSliceIdx;
+          playTickSound();
+        }
+
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          appState.isSpinning = false;
+          const winnerPayload = {
+            id: chosenGuest.id,
+            name: chosenGuest.name,
+            contact: chosenGuest.contact || "",
+            detail: ctxObj.getDetail(chosenGuest)
+          };
+          saveConfigToCloud({ [ctxObj.prizeKey]: winnerPayload });
+          playWinChime();
+          triggerConfetti();
+          spinBtn.textContent = `🎉 得獎者：${chosenGuest.name}！`;
+          showToast(`🎉 恭喜【${chosenGuest.name}】贏得禮物！`, "gold");
+          setTimeout(() => {
+            document.getElementById("wheelModal").classList.add("hidden");
+          }, 1600);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === "function") {
+        confetti({
+          particleCount: 95,
+          spread: 75,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // ==========================================
+    // 7. QR CODE GENERATION
+    // ==========================================
+    function generateQrCodes() {
+      const url = window.location.href;
+      const targets = ["hostQrContainer", "modalQrContainer"];
+      targets.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = "";
+        new QRCode(el, {
+          text: url,
+          width: id === "modalQrContainer" ? 230 : 180,
+          height: id === "modalQrContainer" ? 230 : 180,
+          colorDark: "#831843",
+          colorLight: "#FFFFFF",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      });
+    }
+
+    // ==========================================
+    // 8. EVENT LISTENERS
+    // ==========================================
+    function bindEvents() {
+      const handlePhotoUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+          showToast("正在處理靚相...", "info");
+          const base64 = await compressImageToBase64(file, 360);
+          await saveConfigToCloud({ photoBase64: base64 });
+          showToast("成功更新壽星女靚相！💖", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("圖片處理失敗，請試另一張相", "error");
+        }
+      };
+      document.getElementById("quickPhotoInput").addEventListener("change", handlePhotoUpload);
+      document.getElementById("setupPhotoInput").addEventListener("change", handlePhotoUpload);
+
+      // Guest Open-Ended Quiz Submit (Strictly kg & cm)
+      document.getElementById("quizForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("guestName").value.trim();
+        const contact = document.getElementById("guestContact").value.trim();
+        const q1Val = parseFloat(document.getElementById("inputQ1Weight").value);
+        const q2Val = parseFloat(document.getElementById("inputQ2Height").value);
+        const q3Text = document.getElementById("inputQ3Zhuazhou").value.trim();
+
+        if (!name) {
+          showToast("請輸入你嘅姓名或稱呼！", "error");
+          return;
+        }
+        if (isNaN(q1Val) || q1Val <= 0 || isNaN(q2Val) || q2Val <= 0 || !q3Text) {
+          showToast("請填妥體重 (kg)、身高 (cm) 同抓周物品先送出呀！😊", "error");
+          return;
+        }
+
+        const duplicate = appState.guests.some(
+          (g) => g.name.toLowerCase() === name.toLowerCase() && (g.contact || "").toLowerCase() === contact.toLowerCase()
+        );
+        if (duplicate) {
+          showToast("呢個名字已經參加過啦！如果撞名請喺「檯號/電話」加少少備註～", "error");
+          return;
+        }
+
+        const btn = document.getElementById("btnSubmitQuiz");
+        btn.disabled = true;
+        btn.textContent = "正在送出...";
+
+        const submission = {
+          name,
+          contact,
+          q1Val,
+          q1Unit: "kg",
+          q2Val,
+          q3Text,
+          submittedAt: Date.now()
+        };
+
+        try {
+          if (db && guestsColRef && appState.user) {
+            await addDoc(guestsColRef, submission);
+          } else {
+            appState.guests.push({ id: "local_" + Date.now(), ...submission });
+            saveLocalBackup();
+            renderAll();
+          }
+
+          document.getElementById("quizForm").classList.add("hidden");
+          document.getElementById("submittedCard").classList.remove("hidden");
+          document.getElementById("submittedGuestName").textContent = name;
+          document.getElementById("recQ1").textContent = `${q1Val} kg`;
+          document.getElementById("recQ2").textContent = `${q2Val} cm`;
+          document.getElementById("recQ3").textContent = q3Text;
+          playWinChime();
+          triggerConfetti();
+          showToast("答案已成功送出！🎉", "success");
+        } catch (err) {
+          console.error("Submit error:", err);
+          showToast("送出失敗，請檢查網絡再試", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `<span>送出我嘅答案</span> <span>🚀</span>`;
+        }
+      });
+
+      document.getElementById("btnHelpAnotherGuest").addEventListener("click", () => {
+        document.getElementById("guestName").value = "";
+        document.getElementById("guestContact").value = "";
+        document.getElementById("inputQ1Weight").value = "";
+        document.getElementById("inputQ2Height").value = "";
+        document.getElementById("inputQ3Zhuazhou").value = "";
+        document.getElementById("submittedCard").classList.add("hidden");
+        document.getElementById("quizForm").classList.remove("hidden");
+      });
+
+      document.getElementById("btnToggleMode").addEventListener("click", () => {
+        if (appState.currentView === "guest") {
+          appState.currentView = "host";
+          document.getElementById("guestView").classList.add("hidden");
+          document.getElementById("hostView").classList.remove("hidden");
+          document.getElementById("modeIcon").textContent = "🎈";
+          document.getElementById("modeText").textContent = "返回答題頁";
+          generateQrCodes();
+          renderAll();
+        } else {
+          appState.currentView = "guest";
+          document.getElementById("hostView").classList.add("hidden");
+          document.getElementById("guestView").classList.remove("hidden");
+          document.getElementById("modeIcon").textContent = "👑";
+          document.getElementById("modeText").textContent = "主人家後台";
+        }
+      });
+
+      document.getElementById("btnUnlockHost").addEventListener("click", () => {
+        const pin = document.getElementById("hostPinInput").value.trim();
+        if (pin === "1234") {
+          appState.isHostUnlocked = true;
+          document.getElementById("hostPinScreen").classList.add("hidden");
+          document.getElementById("hostDashboard").classList.remove("hidden");
+          generateQrCodes();
+          renderAll();
+          showToast("歡迎進入主人家後台！👑", "success");
+        } else {
+          showToast("密碼唔啱喎（預設係 1234）", "error");
+        }
+      });
+
+      document.getElementById("hostPinInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("btnUnlockHost").click();
+      });
+
+      document.getElementById("btnCancelPin").addEventListener("click", () => {
+        document.getElementById("btnToggleMode").click();
+      });
+
+      document.getElementById("tabBtnDraw").addEventListener("click", () => {
+        document.getElementById("hostTabDraw").classList.remove("hidden");
+        document.getElementById("hostTabSetup").classList.add("hidden");
+        document.getElementById("tabBtnDraw").className = "py-2.5 px-3 rounded-xl font-bold text-sm bg-pink-500 text-white shadow transition";
+        document.getElementById("tabBtnSetup").className = "py-2.5 px-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-pink-50 transition";
+        renderThreePrizesAndLists();
+      });
+
+      document.getElementById("tabBtnSetup").addEventListener("click", () => {
+        document.getElementById("hostTabSetup").classList.remove("hidden");
+        document.getElementById("hostTabDraw").classList.add("hidden");
+        document.getElementById("tabBtnSetup").className = "py-2.5 px-3 rounded-xl font-bold text-sm bg-pink-500 text-white shadow transition";
+        document.getElementById("tabBtnDraw").className = "py-2.5 px-3 rounded-xl font-bold text-sm text-slate-600 hover:bg-pink-50 transition";
+        generateQrCodes();
+      });
+
+      // Live Actual Answers Inputs
+      let actualSyncTimer = null;
+      const syncActualAnswers = () => {
+        const wVal = document.getElementById("actualWeightInput").value.trim();
+        const hVal = document.getElementById("actualHeightInput").value.trim();
+        const zNote = document.getElementById("actualZhuazhouInput").value.trim();
+
+        appState.config.actualWeightVal = wVal;
+        appState.config.actualHeightCm = hVal;
+        appState.config.actualZhuazhouNote = zNote;
+        renderThreePrizesAndLists();
+
+        clearTimeout(actualSyncTimer);
+        actualSyncTimer = setTimeout(() => {
+          saveConfigToCloud({
+            actualWeightVal: wVal,
+            actualHeightCm: hVal,
+            actualZhuazhouNote: zNote
+          });
+        }, 450);
+      };
+
+      document.getElementById("actualWeightInput").addEventListener("input", syncActualAnswers);
+      document.getElementById("actualHeightInput").addEventListener("input", syncActualAnswers);
+      document.getElementById("actualZhuazhouInput").addEventListener("input", syncActualAnswers);
+
+      // Per-Prize Reset Buttons
+      document.getElementById("btnResetPrize1").addEventListener("click", () => {
+        saveConfigToCloud({ prize1Winner: null });
+        showToast("已重設禮物一得獎者", "info");
+      });
+      document.getElementById("btnResetPrize2").addEventListener("click", () => {
+        saveConfigToCloud({ prize2Winner: null });
+        showToast("已重設禮物二得獎者", "info");
+      });
+      document.getElementById("btnResetPrize3").addEventListener("click", () => {
+        saveConfigToCloud({ prize3Winner: null });
+        showToast("已重設禮物三得獎者", "info");
+      });
+
+      // Lucky Draw Wheel Modal Controls
+      document.getElementById("btnSpinWheel").addEventListener("click", spinLuckyWheel);
+      document.getElementById("btnCloseWheelModal").addEventListener("click", () => {
+        if (!appState.isSpinning) {
+          document.getElementById("wheelModal").classList.add("hidden");
+        }
+      });
+
+      // Add Sample Demo Guests (Strictly kg weights)
+      document.getElementById("btnAddDemoGuests").addEventListener("click", async () => {
+        const samples = [
+          { name: "表姐 Amy", contact: "1號檯", q1Val: 9.2, q1Unit: "kg", q2Val: 74.5, q3Text: "聽診器" },
+          { name: "舅父仔", contact: "2號檯", q1Val: 9.4, q1Unit: "kg", q2Val: 76.0, q3Text: "計算機" },
+          { name: "嫲嫲", contact: "主家席", q1Val: 9.8, q1Unit: "kg", q2Val: 73.5, q3Text: "聽診器" },
+          { name: "Auntie May", contact: "3號檯", q1Val: 8.7, q1Unit: "kg", q2Val: 75.0, q3Text: "聽診器" },
+          { name: "Uncle Ben", contact: "3號檯", q1Val: 10.5, q1Unit: "kg", q2Val: 77.2, q3Text: "雞腿" }
+        ];
+        showToast("正在加入 5 位測試賓客...", "info");
+        for (const s of samples) {
+          const entry = { ...s, submittedAt: Date.now() + Math.floor(Math.random() * 1000) };
+          if (db && guestsColRef && appState.user) {
+            await addDoc(guestsColRef, entry);
+          } else {
+            appState.guests.push({ id: "local_" + Math.random().toString(36).slice(2), ...entry });
+          }
+        }
+        saveLocalBackup();
+        renderAll();
+        showToast("已加入測試賓客！試下輸入實際體重身高同勾選抓周答中者啦～", "success");
+      });
+
+      // Clear All Guest Submissions
+      document.getElementById("btnClearAllGuests").addEventListener("click", () => {
+        showConfirm("清空所有賓客資料？", "確定要刪除全部測試紀錄嗎？刪除後無法復原。", async () => {
+          if (db && guestsColRef && appState.user) {
+            try {
+              const snap = await getDocs(guestsColRef);
+              const promises = [];
+              snap.forEach((d) => promises.push(deleteDoc(d.ref)));
+              await Promise.all(promises);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+          appState.guests = [];
+          await saveConfigToCloud({
+            prize1Winner: null,
+            prize2Winner: null,
+            prize3Winner: null
+          });
+          showToast("已清空所有賓客資料！", "success");
+        });
+      });
+
+      // Save Setup Question Titles
+      document.getElementById("btnSaveSetup").addEventListener("click", async () => {
+        await saveConfigToCloud({
+          partyTitle: document.getElementById("setupPartyTitle").value.trim() || DEFAULT_CONFIG.partyTitle,
+          q1Title: document.getElementById("setupQ1Title").value.trim() || DEFAULT_CONFIG.q1Title,
+          q2Title: document.getElementById("setupQ2Title").value.trim() || DEFAULT_CONFIG.q2Title,
+          q3Title: document.getElementById("setupQ3Title").value.trim() || DEFAULT_CONFIG.q3Title
+        });
+
+        showToast("題目設定已儲存並同步！🎉", "success");
+      });
+
+      // QR Modal, Fullscreen & Download
+      document.getElementById("btnShowQrModal").addEventListener("click", () => {
+        generateQrCodes();
+        document.getElementById("qrModal").classList.remove("hidden");
+      });
+      document.getElementById("btnFullscreenQr").addEventListener("click", () => {
+        generateQrCodes();
+        document.getElementById("qrModal").classList.remove("hidden");
+      });
+      document.getElementById("btnCloseQrModal").addEventListener("click", () => {
+        document.getElementById("qrModal").classList.add("hidden");
+      });
+      document.getElementById("btnModalCopyUrl").addEventListener("click", () => {
+        copyTextFallback(window.location.href);
+      });
+      document.getElementById("btnCopyLink").addEventListener("click", () => {
+        copyTextFallback(window.location.href);
+      });
+      document.getElementById("btnDownloadQr").addEventListener("click", () => {
+        const canvas = document.querySelector("#hostQrContainer canvas");
+        if (!canvas) {
+          showToast("QR Code 尚未生成", "error");
+          return;
+        }
+        const link = document.createElement("a");
+        link.download = "1st-Birthday-Quiz-QRCode.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        showToast("已下載 QR Code 圖片！", "success");
+      });
+    }
+
+    // Boot App
+    window.addEventListener("DOMContentLoaded", () => {
+      bindEvents();
+      generateQrCodes();
+      initFirebase();
+    });
+  </script>
+</body>
+</html>
